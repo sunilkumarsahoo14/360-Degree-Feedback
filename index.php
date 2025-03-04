@@ -37,8 +37,8 @@
             <a class="nav-link" href="#reviews">Reviews</a>
           </li>
         </ul>
-        <a href="#" class="btn btn-brand ms-lg-3">SignUp</a>
-        <a href="#" class="btn btn-brand ms-lg-3">SignIn</a>
+        <a href="login_form.php" class="btn btn-brand ms-lg-3">Login</a>
+        <!-- <a href="#" class="btn btn-brand ms-lg-3">SignIn</a> -->
       </div>
     </div>
   </nav>

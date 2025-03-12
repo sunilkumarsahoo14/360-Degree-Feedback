@@ -7,7 +7,12 @@
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f4f7f9; /* Light background */
+            background-color: #f4f7f9;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            text-align: center;
         }
     </style>
 </head>
@@ -15,6 +20,12 @@
 
 <div class="card p-4 shadow-lg rounded-3" style="max-width: 400px; width: 100%;">
     <h2 class="text-center text-primary fw-bold">Login</h2>
+
+    <!-- Display error message if present -->
+    <?php if (isset($_GET['error'])): ?>
+        <p class="error-message"><?= htmlspecialchars($_GET['error']) ?></p>
+    <?php endif; ?>
+
     <form action="login_form_data.php" method="post">
         <div class="mb-3">
             <label class="form-label" for="email">Email:</label>
@@ -28,9 +39,6 @@
             <label class="form-label" for="user">User Type:</label>
             <select name="user" id="user" class="form-select rounded-pill">
                 <option value="admin">Admin</option>
-                <option value="student">Student</option>
-                <option value="faculty">Faculty</option>
-                <option value="hod">HOD</option>
             </select>
         </div>
         <button class="btn btn-primary w-100 rounded-pill" type="submit">Login</button>

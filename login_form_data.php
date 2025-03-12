@@ -1,76 +1,52 @@
 <?php
-require_once "dbconnect.php"; // Ensure this file correctly connects to your database
+require_once "dbconnect.php"; // Ensure database connection
 
-if (isset($_POST["email"]) && isset($_POST["password"]) && isset($_POST["user"])) {
+$error_message = ""; // Initialize error message
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = trim($_POST["email"]);
     $password = trim($_POST["password"]);
-    $user_type = $_POST["user"]; // Fetch user type from dropdown
+    $user_type = $_POST["user"];
 
     global $conn;
 
     try {
-        // Determine the table based on user type
-        $table = "";
-        switch ($user_type) {
-            case "admin":
-                $table = "admin";
-                break;
-            case "student":
-                $table = "students";
-                break;
-            case "faculty":
-                $table = "faculty";
-                break;
-            case "hod":
-                $table = "hod";
-                break;
-            default:
-                echo "<script>alert('Invalid user type selected!'); window.location.href='index.php';</script>";
-                exit();
+        if ($user_type === "admin") {
+            $table = "admin";
+        } else {
+            $error_message = "Invalid user type!";
         }
 
-        // Fetch user data from the selected table
-        $qry = "SELECT * FROM $table WHERE email = ?";
-        $stmt = $conn->prepare($qry);
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
+        if (empty($error_message)) {
+            $qry = "SELECT * FROM $table WHERE email = ?";
+            $stmt = $conn->prepare($qry);
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = $result->fetch_assoc();
 
-        if ($user) {
-            $saved_password = $user["password"];
-
-            // Verify password (use password_verify() if passwords are hashed)
-            if ($password === $saved_password) { 
-                // Redirect user based on their type
-                switch ($user_type) {
-                    case "admin":
-                        header("Location: admin/admin_dashboard.php");
-                        break;
-                    case "student":
-                        header("Location: student/student_dashboard.php");
-                        break;
-                    case "faculty":
-                        header("Location: faculty/faculty_dashboard.php");
-                        break;
-                    case "hod":
-                        header("Location: hod/hod_dashboard.php");
-                        break;
+            if ($user) {
+                if ($password === $user["password"]) { 
+                    header("Location: admin/admin_dashboard.php"); // Redirect only if login is successful
+                    exit();
+                } else {
+                    $error_message = "Incorrect Credentials! Try Again!";
                 }
-                exit();
             } else {
-                echo "<script>alert('Incorrect password!'); window.location.href='index.php';</script>";
+                $error_message = "User not found!";
             }
-        } else {
-            echo "<script>alert('User not found!'); window.location.href='index.php';</script>";
+            $stmt->close();
         }
     } catch (Exception $e) {
-        die("Error: " . $e->getMessage());
+        $error_message = "Something went wrong! Please try again.";
     } finally {
-        $stmt->close();
         $conn->close();
     }
-} else {
-    echo "<script>alert('Please fill in all fields.'); window.location.href='index.php';</script>";
+}
+
+// Send error message back to login page
+if (!empty($error_message)) {
+    header("Location: login_form.php?error=" . urlencode($error_message));
+    exit();
 }
 ?>

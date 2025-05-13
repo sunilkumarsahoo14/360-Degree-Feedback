@@ -1,23 +1,29 @@
 <?php
 session_start();
-include '../dbconnect.php'; 
+include '../dbconnect.php';
 
-// Assuming admin is logged in, use session or a static ID (replace with session later)
-$admin_id = 1; // Change this to `$_SESSION['admin_id']` when session is available
+$response = [];
 
-$sql = "SELECT * FROM admin WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $admin_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    $admin = $result->fetch_assoc();
-    echo json_encode($admin);
+if (!isset($_SESSION['user_id'])) {
+    $response = ["success" => false, "message" => "Admin not logged in."];
 } else {
-    echo json_encode(["error" => "Admin not found"]);
+    $admin_id = $_SESSION['user_id'];
+
+    $query = "SELECT user_id, name, phone, email FROM admin WHERE user_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $admin_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($admin = $result->fetch_assoc()) {
+        $response = ["success" => true, ...$admin];
+    } else {
+        $response = ["success" => false, "message" => "Admin data not found."];
+    }
+
+    $stmt->close();
 }
 
-$stmt->close();
-$conn->close();
+header('Content-Type: application/json');
+echo json_encode($response);
 ?>
